@@ -5,6 +5,14 @@ import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
 import personService from './services/persons'
 
+const extractErrorMessage = error => {
+  const message = error?.response?.data?.error
+  if (message) {
+    return `: ${message}`
+  }
+  return ''
+}
+
 const App = () => {
   const [persons, setPersons] = useState([])
   const [newName, setNewName] = useState('')
@@ -29,9 +37,13 @@ const App = () => {
     setFilterName(event.target.value)
 
   const displayNotification = (notification, error) => {
-    setError(error)
+    setError(error || false)
     setNotification(notification)
     setTimeout(() => setNotification(null), 5000)
+  }
+
+  const displayError = (errorMessage) => {
+    displayNotification(errorMessage, true)
   }
 
   const addName = (event) => {
@@ -48,14 +60,12 @@ const App = () => {
           .then(updatedPerson => {
             setPersons(persons.map(person =>
               person.id === updatedPerson.id ? updatedPerson : person))
-            displayNotification(`Updated ${updatedPerson.name}`, false)
+            displayNotification(`Updated ${updatedPerson.name}`)
             setNewName('')
             setNewNumber('')
           })
           .catch(() => {
-            displayNotification(
-              `Information of ${existingPerson.name} has already been removed from server`,
-              true)
+            displayError(`Information of ${existingPerson.name} has already been removed from server`)
             setPersons(persons.filter(person => person.id !== existingPerson.id))
           })
       }
@@ -68,9 +78,12 @@ const App = () => {
       personService.create(newPerson)
         .then(createdPerson => {
           setPersons(persons.concat(createdPerson))
-          displayNotification(`Added ${createdPerson.name}`, false)
+          displayNotification(`Added ${createdPerson.name}`)
           setNewName('')
           setNewNumber('')
+        })
+        .catch(error => {
+          displayError(`Couldn't save ${newPerson.name}${extractErrorMessage(error)}`)
         })
     }
   }
@@ -83,6 +96,9 @@ const App = () => {
           setPersons(persons.filter(p =>
             p.id !== person.id))
           displayNotification(`Deleted ${person.name}`)
+        })
+        .catch(error => {
+          displayError(`Couldn't delete ${person.name}${extractErrorMessage(error)}`)
         })
     }
   }
