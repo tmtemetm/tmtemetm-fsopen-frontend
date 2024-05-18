@@ -64,9 +64,13 @@ const App = () => {
             setNewName('')
             setNewNumber('')
           })
-          .catch(() => {
-            displayError(`Information of ${existingPerson.name} has already been removed from server`)
-            setPersons(persons.filter(person => person.id !== existingPerson.id))
+          .catch(error => {
+            if (error?.response?.status === 404) {
+              displayError(`Information of ${existingPerson.name} has already been removed from server`)
+              setPersons(persons.filter(person => person.id !== existingPerson.id))
+            } else {
+              displayError(`Couldn't update ${existingPerson.name}${extractErrorMessage(error)}`)
+            }
           })
       }
     } else {
