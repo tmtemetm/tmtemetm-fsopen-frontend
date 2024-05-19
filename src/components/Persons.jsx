@@ -18,7 +18,7 @@ const Persons = ({ persons, filterName, handleDelete }) => {
     <div>
       {filteredPersons.map(person =>
         <Person
-          key={person.name}
+          key={person.id}
           person={person}
           handleDelete={handleDelete}
         />
